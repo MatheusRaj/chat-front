@@ -1,56 +1,62 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+import "./App.css";
 
 function App() {
+  const [user] = useState(`tiringa-elbrabo-${Date.now()}`);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3001");
+
+    socket.on("connect", () => {
+      console.log(socket.connected);
+    });
+
+    socket.emit('join', {
+      room: 'tiringa-room',
+      from: { key: user }
+    });
+
+    const messages = document.getElementById("messages");
+    const form = document.getElementById("form");
+    const input = (document.getElementById("input") as HTMLInputElement);
+
+    form?.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (input?.value) {
+        console.log({
+          room: 'tiringa-room',
+          from: { key: `tiringa-elbrabo-${Date.now()}` },
+          data: input.value
+        });
+
+        socket.emit("send", {
+          room: 'tiringa-room',
+          from: { key: `tiringa-elbrabo-${Date.now()}` },
+          data: input.value
+        });
+        input.value = "";
+      }
+    });
+
+    socket.on("receive", payload => {
+      console.log('Event: ', payload.data);
+      const item = document.createElement("li");
+      item.textContent = `${payload.from.key}: ${payload.data}`;
+      messages?.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+  }, [user]);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
+      {user}
+      <ul id="messages"></ul>{" "}
+      <form id="form" action="">
+        {" "}
+        <input id="input" />
+        <button>Send</button>{" "}
+      </form>
     </div>
   );
 }
