@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import "./App.css";
 
 function App() {
-  const [user] = useState(`tiringa-elbrabo-${Date.now()}`);
+  const [user] = useState(`user-${Date.now()}`);
 
   useEffect(() => {
     const socket = io("http://localhost:3001");
@@ -13,7 +13,7 @@ function App() {
     });
 
     socket.emit('join', {
-      room: 'tiringa-room',
+      room: 'user-room',
       from: { key: user }
     });
 
@@ -25,14 +25,14 @@ function App() {
       e.preventDefault();
       if (input?.value) {
         console.log({
-          room: 'tiringa-room',
-          from: { key: `tiringa-elbrabo-${Date.now()}` },
+          room: 'user-room',
+          from: { key: `user-elbrabo-${Date.now()}` },
           data: input.value
         });
 
         socket.emit("send", {
-          room: 'tiringa-room',
-          from: { key: `tiringa-elbrabo-${Date.now()}` },
+          room: 'user-room',
+          from: { key: `user-elbrabo-${Date.now()}` },
           data: input.value
         });
         input.value = "";
