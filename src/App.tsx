@@ -26,13 +26,13 @@ function App() {
       if (input?.value) {
         console.log({
           room: 'user-room',
-          from: { key: `user-elbrabo-${Date.now()}` },
+          from: { key: user },
           data: input.value
         });
 
         socket.emit("send", {
           room: 'user-room',
-          from: { key: `user-elbrabo-${Date.now()}` },
+          from: { key: user },
           data: input.value
         });
         input.value = "";
