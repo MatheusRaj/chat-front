@@ -6,7 +6,7 @@ function App() {
   const [user] = useState(`user-${Date.now()}`);
 
   useEffect(() => {
-    const socket = io("http://localhost:3001");
+    const socket = io("http://localhost:3001", { path: '/' });
 
     socket.on("connect", () => {
       console.log(socket.connected);
@@ -29,6 +29,11 @@ function App() {
           from: { key: user },
           data: input.value
         });
+
+        const item = document.createElement("li");
+        item.textContent = `${user}: ${input.value}`;
+        messages?.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
 
         socket.emit("send", {
           room: 'user-room',
