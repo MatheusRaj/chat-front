@@ -6,6 +6,10 @@ function App() {
   const [user] = useState(`user-${Date.now()}`);
 
   useEffect(() => {
+    const messages = document.getElementById("messages");
+    const form = document.getElementById("form");
+    const input = (document.getElementById("input") as HTMLInputElement);
+
     const socket = io("http://localhost:3001", { path: '/' });
 
     socket.on("connect", () => {
@@ -14,19 +18,26 @@ function App() {
 
     socket.emit('join', {
       room: 'user-room',
-      from: { key: user }
+      from: user
     });
 
-    const messages = document.getElementById("messages");
-    const form = document.getElementById("form");
-    const input = (document.getElementById("input") as HTMLInputElement);
+    socket.on('list-messages', (res) => {
+      res.map(({ message }: any) => {
+        const el = document.createElement("li");
+        el.textContent = `${message.from}: ${message.content}`;
+        messages?.appendChild(el);
+        window.scrollTo(0, document.body.scrollHeight);
+
+        return true;
+      });
+    });
 
     form?.addEventListener("submit", function (e) {
       e.preventDefault();
       if (input?.value) {
         console.log({
           room: 'user-room',
-          from: { key: user },
+          from: user,
           data: input.value
         });
 
@@ -37,17 +48,19 @@ function App() {
 
         socket.emit("send", {
           room: 'user-room',
-          from: { key: user },
-          data: input.value
+          message: {
+            from: user,
+            content: input.value
+          }
         });
         input.value = "";
       }
     });
 
-    socket.on("receive", payload => {
-      console.log('Event: ', payload.data);
+    socket.on("receive", ({ message }) => {
+      console.log('Event: ', message);
       const item = document.createElement("li");
-      item.textContent = `${payload.from.key}: ${payload.data}`;
+      item.textContent = `${message.from}: ${message.content}`;
       messages?.appendChild(item);
       window.scrollTo(0, document.body.scrollHeight);
     });
